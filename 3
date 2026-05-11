@@ -1,0 +1,83 @@
+CREATE TABLE Book (
+  Book_ID INT PRIMARY KEY,
+  Book_Name VARCHAR(50),
+  Author VARCHAR(50),
+  Price INT,
+  Category VARCHAR(30)
+);
+
+CREATE TABLE Issued_Book (
+  Book_Name VARCHAR(50)
+);
+INSERT INTO Book VALUES
+(1, 'Shyamchi Aai', 'Sane Guruji', 250, 'Marathi Literature'),
+(2, 'Chhava', 'Shivaji Sawant', 600, 'Historical Novel'),
+(3, 'Dnyaneshwari', 'Sant Dnyaneshwar', 500, 'Spiritual'),
+(4, 'Bhagavad Gita', 'Ved Vyasa', 350, 'Religious'),
+(19, 'Ramayan', 'Valmiki', 550, 'Religious');
+
+INSERT INTO Issued_Book VALUES
+('Database Systems'),
+('Python Basics');
+
+UPDATE Book
+SET Price = Price + (Price * 0.10)
+WHERE Category = 'Programming';
+DELETE FROM Book
+WHERE Price < 350;
+SELECT Book_Name, Price, Price + 50 AS New_Price FROM Book;
+SELECT * FROM Book WHERE Category = 'Education' AND Price > 500;
+SELECT * FROM Book WHERE Book_Name LIKE 'D%';
+SELECT UPPER(Book_Name) AS Book_Upper, LOWER(Author) AS Author_Lower FROM Book;
+SELECT Book_Name FROM Book UNION SELECT Book_Name FROM Issued_Book;
+
+CREATE DATABASE college_db;
+USE college_db;
+
+CREATE TABLE student (
+  roll_no INT PRIMARY KEY,
+  name VARCHAR(50),
+  marks INT
+);
+
+INSERT INTO student VALUES (1,'Amit',85), (2, 'Neha',90), (3,'Ravi', 78);
+CREATE USER 'admin1'@'localhost' IDENTIFIED BY 'admin123';
+CREATE USER 'faculty1'@'localhost' IDENTIFIED BY 'faculty123';
+CREATE USER 'student1'@'localhost' IDENTIFIED BY 'student123';
+
+CREATE ROLE 'admin_role';
+CREATE ROLE 'faculty_role';
+CREATE ROLE 'student_role';
+GRANT ALL PRIVILEGES ON college_db.* TO 'admin_role';
+GRANT SELECT, UPDATE ON college_db.student TO 'faculty_role';
+GRANT SELECT ON college_db.student TO 'student_role';
+GRANT 'admin_role' TO 'admin1'@'localhost';
+GRANT 'faculty_role' TO 'faculty1'@'localhost';
+GRANT 'student_role' TO 'student1'@'localhost';
+
+SET DEFAULT ROLE ALL TO 'admin1'@'localhost', 'faculty1'@'localhost', 'student1'@'localhost';
+REVOKE UPDATE ON college_db.student FROM 'faculty_role';
+
+CREATE DATABASE bank_db;
+USE bank_db;
+
+CREATE TABLE Account (
+  Acc_No INT PRIMARY KEY,
+  Acc_Holder VARCHAR(50),
+  Balance INT
+);
+
+INSERT INTO Account VALUES
+(101, 'Amit Patil', 10000),
+(102, 'Neha Sharma', 15000);
+
+START TRANSACTION;
+
+UPDATE Account SET Balance = Balance - 2000 WHERE Acc_No = 101;
+UPDATE Account SET Balance = Balance + 2000 WHERE Acc_No = 102;
+
+SAVEPOINT transfer_done;
+
+UPDATE Account SET Balance = Balance - 5000 WHERE Acc_No = 101;
+ROLLBACK TO transfer_done;
+COMMIT;
