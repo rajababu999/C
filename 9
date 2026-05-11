@@ -1,0 +1,287 @@
+user@ubuntu:~$ mongosh
+test> use college
+switched to db college
+college> show dbs
+admin     40.00 KiB
+college   68.00 KiB
+config   108.00 KiB
+desert     8.00 KiB
+dessert   64.00 KiB
+local     64.00 KiB
+college> db
+college
+college> db.createCollection("teacher")
+{ ok: 1 }
+college> show collections
+student
+teacher
+college> db.teacher.insertOne({tID:101, tname:"a", salary:10000})
+{
+  acknowledged: true,
+  insertedId: ObjectId('6a0076f6c83182f2c5abc114')
+}
+college> db.teacher.insertMany( [ {tID:102, tname:"b", salary:20000, subject:"DBMS"}, {tID:103, tname:'c', salary:30000}] )
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('6a007773c83182f2c5abc115'),
+    '1': ObjectId('6a007773c83182f2c5abc116')
+  }
+}
+college> db.teacher.find()
+[
+  {
+    _id: ObjectId('6a0076f6c83182f2c5abc114'),
+    tID: 101,
+    tname: 'a',
+    salary: 10000
+  },
+  {
+    _id: ObjectId('6a007773c83182f2c5abc115'),
+    tID: 102,
+    tname: 'b',
+    salary: 20000,
+    subject: 'DBMS'
+  },
+  {
+    _id: ObjectId('6a007773c83182f2c5abc116'),
+    tID: 103,
+    tname: 'c',
+    salary: 30000
+  }
+]
+college> db.teacher.find({tname:"a"})
+[
+  {
+    _id: ObjectId('6a0076f6c83182f2c5abc114'),
+    tID: 101,
+    tname: 'a',
+    salary: 10000
+  }
+]
+college> db.teacher.find( {salary:{$gt:10000}})
+[
+  {
+    _id: ObjectId('6a007773c83182f2c5abc115'),
+    tID: 102,
+    tname: 'b',
+    salary: 20000,
+    subject: 'DBMS'
+  },
+  {
+    _id: ObjectId('6a007773c83182f2c5abc116'),
+    tID: 103,
+    tname: 'c',
+    salary: 30000
+  }
+]
+college> db.teacher.find({ $or[{tname:'a'},{tname:'c'}] })
+Uncaught:
+SyntaxError: Unexpected token, expected "," (1:21)
+> 1 |
+db.teacher.find({ $or[{tname:'a'},{tname:'c'}] })
+    |                      ^
+  2 |
+college> db.teacher.find({ $or:[{tname:'a'},{tname:'c'}] })
+[
+  {
+    _id: ObjectId('6a0076f6c83182f2c5abc114'),
+    tID: 101,
+    tname: 'a',
+    salary: 10000
+  },
+  {
+    _id: ObjectId('6a007773c83182f2c5abc116'),
+    tID: 103,
+    tname: 'c',
+    salary: 30000
+  }
+]
+college> db.teacher.updateOne({tname:'c'},{$set:{subject:"OS"}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+college> db.teacher.find({tname:'c'})
+[
+  {
+    _id: ObjectId('6a007773c83182f2c5abc116'),
+    tID: 103,
+    tname: 'c',
+    salary: 30000,
+    subject: 'OS'
+  }
+]
+college> db.teacher.find( {}, 
+{$set:{shift:"morning"}} )
+MongoServerError[Location16410]: Consider using $getField or $setField for a field path with '.' or '$'.
+:: caused by :: FieldPath field names may not start with '$', given '$set'.
+college> db.teacher.updateMany( {}, {$set:{shift:"morning"}} )
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 3,
+  modifiedCount: 3,
+  upsertedCount: 0
+}
+college> db.teacher.find()
+[
+  {
+    _id: ObjectId('6a0076f6c83182f2c5abc114'),
+    tID: 101,
+    tname: 'a',
+    salary: 10000,
+    shift: 'morning'
+  },
+  {
+    _id: ObjectId('6a007773c83182f2c5abc115'),
+    tID: 102,
+    tname: 'b',
+    salary: 20000,
+    subject: 'DBMS',
+    shift: 'morning'
+  },
+  {
+    _id: ObjectId('6a007773c83182f2c5abc116'),
+    tID: 103,
+    tname: 'c',
+    salary: 30000,
+    subject: 'OS',
+    shift: 'morning'
+  }
+]
+college> db.teacher.updateMany({$or:[{tname:'a'},{tname:'c'}]},{$set:{salary:salary+1000}} )
+ReferenceError: salary is not defined
+college> db.teacher.updateMany({$or:[{tname:'a'},{tname:'c'}]},{$set:{salary:15555}} )
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 2,
+  modifiedCount: 2,
+  upsertedCount: 0
+}
+college> db.teacher.find()
+[
+  {
+    _id: ObjectId('6a0076f6c83182f2c5abc114'),
+    tID: 101,
+    tname: 'a',
+    salary: 15555,
+    shift: 'morning'
+  },
+  {
+    _id: ObjectId('6a007773c83182f2c5abc115'),
+    tID: 102,
+    tname: 'b',
+    salary: 20000,
+    subject: 'DBMS',
+    shift: 'morning'
+  },
+  {
+    _id: ObjectId('6a007773c83182f2c5abc116'),
+    tID: 103,
+    tname: 'c',
+    salary: 15555,
+    subject: 'OS',
+    shift: 'morning'
+  }
+]
+college> db.teacher.updateMany({[{tname:'a'},{tname:'b'}]}, {$set:{age:55}} )
+Uncaught:
+SyntaxError: Unexpected token, expected "]" (1:35)
+> 1 |
+db.teacher.updateMany({[{tname:'a'},{tname:'b'}]}, {$set:{age:55}} )
+    |                                    ^
+  2 |
+college> db.teacher.updateMany( {$or:[{tname:'a'},{tname:'b'},{tname:'c'}]}, {$set:{age:60}} )
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 3,
+  modifiedCount: 3,
+  upsertedCount: 0
+}
+college> db.teacher.find()
+[
+  {
+    _id: ObjectId('6a0076f6c83182f2c5abc114'),
+    tID: 101,
+    tname: 'a',
+    salary: 15555,
+    shift: 'morning',
+    age: 60
+  },
+  {
+    _id: ObjectId('6a007773c83182f2c5abc115'),
+    tID: 102,
+    tname: 'b',
+    salary: 20000,
+    subject: 'DBMS',
+    shift: 'morning',
+    age: 60
+  },
+  {
+    _id: ObjectId('6a007773c83182f2c5abc116'),
+    tID: 103,
+    tname: 'c',
+    salary: 15555,
+    subject: 'OS',
+    shift: 'morning',
+    age: 60
+  }
+]
+college> db.teacher.deleteMany({ $or: [{ tname: 'a' }, { tname: 'b' }, { tname: 'c' }] })
+{ acknowledged: true, deletedCount: 3 }
+college> db.teacher.find()
+college> db.teacher.insertMany([{tname:'a',subject:'pucchi'},{tname:'b',subject:'gand'},{tname:'c',subject:'lund'}])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('6a007f60c83182f2c5abc117'),
+    '1': ObjectId('6a007f60c83182f2c5abc118'),
+    '2': ObjectId('6a007f60c83182f2c5abc119')
+  }
+}
+college> db.teacher.find()
+[
+  {
+    _id: ObjectId('6a007f60c83182f2c5abc117'),
+    tname: 'a',
+    subject: 'pucchi'
+  },
+  {
+    _id: ObjectId('6a007f60c83182f2c5abc118'),
+    tname: 'b',
+    subject: 'gand'
+  },
+  {
+    _id: ObjectId('6a007f60c83182f2c5abc119'),
+    tname: 'c',
+    subject: 'lund'
+  }
+]
+college> db.teacher.deleteOne({subject:'gand'})
+{ acknowledged: true, deletedCount: 1 }
+college> db.teacher.find()
+[
+  {
+    _id: ObjectId('6a007f60c83182f2c5abc117'),
+    tname: 'a',
+    subject: 'pucchi'
+  },
+  {
+    _id: ObjectId('6a007f60c83182f2c5abc119'),
+    tname: 'c',
+    subject: 'lund'
+  }
+]
+college> db.teacher.deleteMany({})
+{ acknowledged: true, deletedCount: 2 }
+college> db.teacher.find()
+college> db.student.deleteMany({
+| rollno:{$gt:2}
+| })
+}
